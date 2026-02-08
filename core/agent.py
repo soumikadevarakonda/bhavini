@@ -7,7 +7,7 @@ genai.configure(api_key='AIzaSyBCZRlpfwmWwnuHqE767X7QVwpRT0iv-3Q')
 
 # Use Gemini model
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name="gemini-2.0-flash",
     system_instruction=(
         "Summarize government documents clearly and accurately. "
         "Use neutral, factual English. Avoid interpretation."
