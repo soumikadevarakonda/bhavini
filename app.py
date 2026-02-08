@@ -62,7 +62,11 @@ if uploaded_file:
         text = extract_text(uploaded_file)
 
     st.subheader("Extracted Text")
-    st.text_area("", text, height=300)
+    st.text_area("Content", text, height=300, label_visibility="collapsed")
+
+    if not text:
+        st.error("Could not extract text from this document. It might be an image-only PDF. Please upload a PDF with selectable text.")
+        st.stop()
 
     with st.spinner("Generating summary..."):
         summary_en = generate_summary(text)
@@ -70,7 +74,7 @@ if uploaded_file:
     with st.spinner("Translating summary using Bhashini..."):
         summary_translated = translate_text(
             text=summary_en,
-            target_lang=TARGET_LANGUAGE_CODE
+            target_lang=st.session_state.language_code
         )
 
     st.subheader("Summary")
