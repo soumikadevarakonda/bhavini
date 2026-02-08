@@ -2,3 +2,6 @@ streamlit
 pymupdf
 requests
 google-generativeai
+pytesseract
+Pillow
+pdf2image
