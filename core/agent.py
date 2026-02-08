@@ -1,8 +1,25 @@
-from core.summarizer import summarize
+# core/agent.py
+import os
+import google.generativeai as genai
 
-def process_document(text):
-    summary = summarize(text)
+# Configure Gemini
+genai.configure(api_key='AIzaSyBCZRlpfwmWwnuHqE767X7QVwpRT0iv-3Q')
 
-    return {
-        "summary": summary
-    }
+# Use Gemini model
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    system_instruction=(
+        "Summarize government documents clearly and accurately. "
+        "Use neutral, factual English. Avoid interpretation."
+    )
+)
+
+def generate_summary(text: str) -> str:
+    response = model.generate_content(
+        text,
+        generation_config={
+            "temperature": 0.2,
+        }
+    )
+
+    return response.text.strip()
