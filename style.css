@@ -3,7 +3,7 @@
 
 :root {
     --primary-color: #FF6600;
-    /* Vahini Orange */
+    /* Bhavini Orange */
     --primary-dark: #cc5200;
     --sidebar-bg: #1E1E1E;
     /* Professional Dark Sidebar */
@@ -65,8 +65,9 @@ header {
 }
 
 /* MAIN CONTENT HEADER */
-h1 {
-    color: var(--primary-color);
+h1,
+.stApp h1 {
+    color: var(--primary-color) !important;
     font-weight: 700;
     font-size: 2.2rem;
     margin-bottom: 0.5rem;
@@ -75,26 +76,27 @@ h1 {
     padding-bottom: 5px;
 }
 
-h2 {
-    color: #444;
+h2,
+.stApp h2 {
+    color: #444 !important;
     font-size: 1.5rem;
     margin-top: 20px;
     margin-bottom: 15px;
 }
 
-h3 {
+h3,
+.stApp h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #666;
+    color: #666 !important;
 }
 
-/* CARDS & CONTAINERS */
-.stContainer,
-[data-testid="stVerticalBlock"]>div>div {
-    /* Identify streamlit block containers if possible, 
-       but generic Streamlit classes are tricky. 
-       We rely on specific widget styling. */
+/* Ensure background color is enforced */
+.stApp {
+    background-color: var(--bg-color) !important;
 }
+
+
 
 /* Custom Card Style for Sections */
 .css-card {
@@ -131,11 +133,41 @@ h3 {
 }
 
 /* File Uploader */
+/* File Uploader */
 [data-testid="stFileUploader"] {
-    background-color: white;
+    background-color: white !important;
     padding: 20px;
     border-radius: 8px;
     border: 1px dashed var(--primary-color);
+}
+
+[data-testid="stFileUploader"] section {
+    background-color: white !important;
+}
+
+[data-testid="stFileUploader"] label {
+    color: #333333 !important;
+}
+
+[data-testid="stFileUploader"] button {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border: none !important;
+}
+
+[data-testid="stFileUploader"] div,
+[data-testid="stFileUploader"] span,
+[data-testid="stFileUploader"] p,
+[data-testid="stFileUploader"] small {
+    color: #333333 !important;
+    /* Force dark text for "Drag and drop", "Limit 200MB" etc */
+}
+
+/* Ensure all widget labels are visible */
+.stMarkdown p,
+.stMarkdown label,
+.stMarkdown div {
+    color: #333333 !important;
 }
 
 /* Tabs */
@@ -156,6 +188,19 @@ h3 {
     background-color: white;
     color: var(--primary-color) !important;
     border-bottom: 2px solid var(--primary-color);
+}
+
+/* Status Widget Text Visibility */
+[data-testid="stStatusWidget"] {
+    border: 1px solid #ddd;
+    background-color: #f0f0f0;
+}
+
+[data-testid="stStatusWidget"] * {
+    color: #000000 !important;
+    fill: #000000 !important;
+    /* For SVGs */
+    font-weight: 600;
 }
 
 /* Footer */

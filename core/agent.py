@@ -11,35 +11,37 @@ if not api_key:
     raise ValueError("GEMINI_API_KEY not found in environment variables. Please set it in .env file.")
 genai.configure(api_key=api_key)
 
+import google.api_core.exceptions
+
 # Use Gemini model
+model_name = "gemini-2.5-flash"
 model = genai.GenerativeModel(
-    model_name="gemini-2.5-flash",
+    model_name=model_name,
     system_instruction=(
         "Summarize government documents clearly and accurately. "
         "Use neutral, factual English. Avoid interpretation."
     )
 )
 
-def generate_summary(text: str) -> str:
-    response = model.generate_content(
-        text,
-        generation_config={
-            "temperature": 0.2,
-        }
-    )
+def _generate_safe(prompt: str, config: dict) -> str:
+    try:
+        response = model.generate_content(prompt, generation_config=config)
+        return response.text.strip()
+    except google.api_core.exceptions.ResourceExhausted:
+        return (
+            "⚠️ **API Quota Exceeded**: You have reached the free tier limit for Gemini API. "
+            "Please wait a few minutes and try again. (Error 429)"
+        )
+    except Exception as e:
+        return f"⚠️ **AI Error**: An unexpected error occurred: {str(e)}"
 
-    return response.text.strip()
+def generate_summary(text: str, language: str = "English") -> str:
+    prompt = f"Summarize the following text in {language}. Keep it concise and factual:\n\n{text}"
+    return _generate_safe(prompt, {"temperature": 0.2})
 
-def answer_question(context: str, question: str) -> str:
+def answer_question(context: str, question: str, language: str = "English") -> str:
     """
     Answers a question based on the provided document context.
     """
-    prompt = f"Document Content:\n{context}\n\nQuestion: {question}\n\nAnswer (keep it simple and direct):"
-    
-    response = model.generate_content(
-        prompt,
-        generation_config={
-            "temperature": 0.3,
-        }
-    )
-    return response.text.strip()
+    prompt = f"Document Content:\n{context}\n\nQuestion: {question}\n\nAnswer (in {language}, keep it simple and direct):"
+    return _generate_safe(prompt, {"temperature": 0.3})

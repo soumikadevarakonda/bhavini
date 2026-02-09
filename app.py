@@ -42,7 +42,7 @@ with open("style.css") as f:
 
 # ---------- SIDEBAR (NAVIGATION & SETTINGS) ----------
 with st.sidebar:
-    st.markdown("### 🏛️ Vahini PRO")
+    st.markdown("### 🏛️ Bhavini PRO")
     
     st.markdown("---")
     st.markdown("**Settings**")
@@ -65,10 +65,10 @@ with st.sidebar:
     
     with st.expander("About"):
         st.caption("GovTech Inclusive AI Assistant v1.0")
-        st.caption("© 2026 Vahini Project")
+        st.caption("© 2026 Bhavini Project")
 
 # ---------- MAIN HEADER ----------
-st.markdown("<h1>🇮🇳 Vahini Intelligence Dashboard</h1>", unsafe_allow_html=True)
+st.markdown("<h1>🇮🇳 Bhavini Intelligence Dashboard</h1>", unsafe_allow_html=True)
 st.markdown("### Sovereign Translation & Analysis System for Indian Governments")
 st.markdown("---")
 
@@ -76,6 +76,7 @@ st.markdown("---")
 if "language_selected" not in st.session_state:
     st.session_state.language_selected = False
     st.session_state.language = "English"
+    st.session_state.language_code = "en" # Default to English
 
 # Row 1: Upload Widget
 col_upload, col_info = st.columns([1, 2])
@@ -109,24 +110,48 @@ if uploaded_file:
     tab_summary, tab_qna, tab_source = st.tabs(["📝 Executive Summary", "🎙️ Voice Q&A", "📄 Source Text"])
     
     with tab_summary:
+        @st.cache_data
+        def get_summary(text, language):
+             return generate_summary(text, language)
+
         with st.status("Generating insights...", expanded=True) as status:
-            summary_en = generate_summary(text)
+            if "summary_text" not in st.session_state or st.session_state.get("last_uploaded_file") != uploaded_file.name:
+                 # Pass selected language to summarizer
+                 summary_en = get_summary(text, st.session_state.language)
+                 st.session_state.summary_text = summary_en
+                 st.session_state.last_uploaded_file = uploaded_file.name
+                 # Clear old audio if new file/summary
+                 if "summary_audio" in st.session_state:
+                     del st.session_state.summary_audio
+            
             status.update(label="Analysis Complete", state="complete", expanded=False)
         
+        summary_en = st.session_state.summary_text
+
         col_sum_text, col_sum_audio = st.columns([3, 1])
         with col_sum_text:
-            st.markdown('<div class="css-card">', unsafe_allow_html=True)
             st.info(summary_en)
-            st.markdown('</div>', unsafe_allow_html=True)
         
         with col_sum_audio:
-            st.markdown('<div class="css-card">', unsafe_allow_html=True)
             st.markdown("**Audio Playback**")
+            # Use selected language code for TTS
             if st.button("▶️ Read Aloud"):
-                 audio_fp = text_to_audio(summary_en, "en")
-                 if audio_fp:
-                     st.audio(audio_fp)
-            st.markdown('</div>', unsafe_allow_html=True)
+                 if "summary_audio" not in st.session_state:
+                     with st.spinner("Generating audio... This may take 1-2 minutes. Please wait..."):
+                        try:
+                            # Debug: print language code
+                            # st.write(f"Debug: Generating audio for {st.session_state.language_code}")
+                            audio_fp = text_to_audio(summary_en, st.session_state.language_code)
+                            if audio_fp:
+                                st.session_state.summary_audio = audio_fp
+                            else:
+                                st.error("Audio generation returned no data.")
+                        except Exception as e:
+                            st.error(f"Error generating audio: {e}")
+            
+            # Always show player if audio exists in session state
+            if "summary_audio" in st.session_state and st.session_state.summary_audio:
+                st.audio(st.session_state.summary_audio, format="audio/mp3")
 
     with tab_qna:
         col_qna_input, col_qna_res = st.columns([1, 2])
@@ -144,11 +169,12 @@ if uploaded_file:
                     q_text = audio_to_text(audio_value.read())
                     if q_text:
                         st.markdown(f"**Query:** {q_text}")
-                        ans = answer_question(text, q_text)
+                        # Pass selected language to Q&A
+                        ans = answer_question(text, q_text, st.session_state.language)
                         
                         st.success(f"Answer: {ans}")
                         
-                        ans_audio = text_to_audio(ans, "en")
+                        ans_audio = text_to_audio(ans, st.session_state.language_code)
                         if ans_audio:
                             st.audio(ans_audio)
                     else:
@@ -163,7 +189,7 @@ if uploaded_file:
 st.markdown(
     """
     <div class="professional-footer">
-        <strong>Vahini Project</strong> | Inclusive AI for India <br>
+        <strong>Bhavini Project</strong> | Inclusive AI for India <br>
         Developed by Madhu Vadlamani, Pradeep Vadlamuri, Manikanta, Soumika
     </div>
     """,
