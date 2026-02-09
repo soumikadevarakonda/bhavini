@@ -1,9 +1,14 @@
 # core/agent.py
 import os
 import google.generativeai as genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Configure Gemini
-api_key = os.getenv("GEMINI_API_KEY") or "AIzaSyCEupAEHHAhC7DTX16p07TVpSuqjCvkdJM"
+api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    raise ValueError("GEMINI_API_KEY not found in environment variables. Please set it in .env file.")
 genai.configure(api_key=api_key)
 
 # Use Gemini model

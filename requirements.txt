@@ -8,3 +8,4 @@ pdf2image
 gTTS
 SpeechRecognition
 streamlit-audiorecorder
+python-dotenv
