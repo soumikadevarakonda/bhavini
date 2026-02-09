@@ -5,3 +5,6 @@ google-generativeai
 pytesseract
 Pillow
 pdf2image
+gTTS
+SpeechRecognition
+streamlit-audiorecorder

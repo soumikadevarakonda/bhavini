@@ -1,7 +1,9 @@
 import streamlit as st
 from core.document_reader import extract_text
-from core.agent import generate_summary
+from core.agent import generate_summary, answer_question
 from core.translation import translate_text
+from core.audio import text_to_audio, audio_to_text
+from streamlit_audiorecorder import audiorecorder
 
 st.set_page_config(page_title="Bhavini Prototype", layout="wide")
 
@@ -61,9 +63,6 @@ if uploaded_file:
     with st.spinner("Reading document..."):
         text = extract_text(uploaded_file)
 
-    st.subheader("Extracted Text")
-    st.text_area("Content", text, height=300, label_visibility="collapsed")
-
     if not text:
         st.error("Could not extract text from this document. It might be an image-only PDF. Please upload a PDF with selectable text.")
         st.stop()
@@ -71,11 +70,39 @@ if uploaded_file:
     with st.spinner("Generating summary..."):
         summary_en = generate_summary(text)
 
-    with st.spinner("Translating summary using Bhashini..."):
-        summary_translated = translate_text(
-            text=summary_en,
-            target_lang=st.session_state.language_code
-        )
-
+    # --- VOICE OUTPUT (TTS) ---
     st.subheader("Summary")
-    st.write(summary_translated)
+    st.write(summary_en) # Showing English summary for now as translation is mocked
+
+    if st.button("🔊 Listen to Summary"):
+        with st.spinner("Generating audio..."):
+            audio_fp = text_to_audio(summary_en, "en")
+            if audio_fp:
+                st.audio(audio_fp, format='audio/mp3')
+
+    # --- VOICE INPUT (Q&A) ---
+    st.divider()
+    st.subheader("Ask a Question (Voice)")
+
+    audio_bytes = audiorecorder("Click to Record", "Recording...")
+    
+    if len(audio_bytes) > 0:
+        st.audio(audio_bytes, format="audio/wav")
+        
+        with st.spinner("Transcribing..."):
+            question_text = audio_to_text(audio_bytes)
+        
+        if question_text:
+            st.success(f"You asked: {question_text}")
+            
+            with st.spinner("Getting answer..."):
+                answer = answer_question(text, question_text)
+            
+            st.write(f"**Answer:** {answer}")
+             
+            # Auto-play answer
+            answer_audio = text_to_audio(answer, "en")
+            if answer_audio:
+                st.audio(answer_audio, format='audio/mp3')
+        else:
+            st.warning("Could not understand audio. Please try again.")

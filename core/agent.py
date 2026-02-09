@@ -24,3 +24,17 @@ def generate_summary(text: str) -> str:
     )
 
     return response.text.strip()
+
+def answer_question(context: str, question: str) -> str:
+    """
+    Answers a question based on the provided document context.
+    """
+    prompt = f"Document Content:\n{context}\n\nQuestion: {question}\n\nAnswer (keep it simple and direct):"
+    
+    response = model.generate_content(
+        prompt,
+        generation_config={
+            "temperature": 0.3,
+        }
+    )
+    return response.text.strip()
